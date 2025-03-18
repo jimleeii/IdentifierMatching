@@ -12,6 +12,7 @@
     <Description>A identifiermatching project that uses minimal API structure.</Description>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="EndpointDefinition" Version="1.0.3" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
   </ItemGroup>
 </Project>

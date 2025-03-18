@@ -1,5 +1,6 @@
-﻿using System.Reflection;
+﻿using EndpointDefinition;
 using Microsoft.OpenApi.Models;
+using System.Reflection;
 
 namespace IdentifierMatching.EndpointDefinitions;
 
@@ -10,15 +11,23 @@ public class SwaggerEndpointDefinition : IEndpointDefinition
 {
     private readonly string Title = Assembly.GetEntryAssembly()!.GetName().Name!;
     private const string Version = "v1";
+    private ILogger<SwaggerEndpointDefinition>? Logger;
 
     /// <summary>
     /// Defines the endpoints.
     /// </summary>
     /// <param name="app">The app.</param>
-    public void DefineEndpoints(WebApplication app)
+    /// <param name="env">The env.</param>
+    public void DefineEndpoints(WebApplication app, IWebHostEnvironment env)
     {
-        app.UseSwagger();
-        app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", $"{Title} {Version}"));
+        if (env.IsDevelopment())
+        {
+            app.UseDeveloperExceptionPage();
+
+            Logger!.LogInformation("Using Swagger UI");
+            app.UseSwagger();
+            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", $"{Title} {Version}"));
+        }
     }
 
     /// <summary>
@@ -27,6 +36,8 @@ public class SwaggerEndpointDefinition : IEndpointDefinition
     /// <param name="services">The services.</param>
     public void DefineServices(IServiceCollection services)
     {
+        Logger = services.BuildServiceProvider().GetRequiredService<ILogger<SwaggerEndpointDefinition>>();
+
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen(c =>
         {

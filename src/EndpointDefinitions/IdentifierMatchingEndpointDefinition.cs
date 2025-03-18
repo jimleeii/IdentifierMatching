@@ -1,3 +1,5 @@
+using EndpointDefinition;
+
 namespace IdentifierMatching.EndpointDefinitions;
 
 /// <summary>
@@ -5,18 +7,30 @@ namespace IdentifierMatching.EndpointDefinitions;
 /// </summary>
 public class IdentifierMatchingEndpointDefinition : IEndpointDefinition
 {
+    private ILogger<IdentifierMatchingEndpointDefinition>? Logger;
+
     /// <summary>
     /// Defines the endpoints.
     /// </summary>
     /// <param name="app">The app.</param>
+    /// <param name="env">The env.</param>
     /// <remarks>
     /// Defines a single POST endpoint, <c>api/IdentifierMatching</c>, that executes the
     /// <see cref="IdentifierMatchingAsync"/> function to match attributes between the base run
     /// and target run and returns the matches in the response body.
     /// </remarks>
-    public void DefineEndpoints(WebApplication app)
+    public void DefineEndpoints(WebApplication app, IWebHostEnvironment env)
     {
-        app.MapPost("api/IdentifierMatching", IdentifierMatchingAsync);
+        // Define endpoints
+        app.MapPost("/api/IdentifierMatching", IdentifierMatchingAsync);
+
+        // Define different endpoints based on environment
+        if (env.IsDevelopment())
+        {
+            app.MapGet("/api/IdentifierMatching/debug", () => "Debug endpoint");
+            // Log configuration
+            Logger!.LogInformation("Configuration: {Config}", Config.GetConfig());
+        }
     }
 
     /// <summary>
@@ -28,6 +42,8 @@ public class IdentifierMatchingEndpointDefinition : IEndpointDefinition
     /// </remarks>
     public void DefineServices(IServiceCollection services)
     {
+        Logger = services.BuildServiceProvider().GetRequiredService<ILogger<IdentifierMatchingEndpointDefinition>>();
+
         services.AddSingleton<IAttributesMatching, AttributesMatching>();
     }
 
@@ -37,7 +53,7 @@ public class IdentifierMatchingEndpointDefinition : IEndpointDefinition
     /// <param name="service">The service.</param>
     /// <param name="request">The request.</param>
     /// <returns>IResult.</returns>
-    private async Task<IResult> IdentifierMatchingAsync(IAttributesMatching service, IdentifierMatchRequest request)
+    private static async Task<IResult> IdentifierMatchingAsync(IAttributesMatching service, IdentifierMatchRequest request)
     {
         var matches = await service.MatchRecords(request.BaseRun, request.TargetRun, request.BaseColumns, request.TargetColumns);
         return Results.Ok(matches);

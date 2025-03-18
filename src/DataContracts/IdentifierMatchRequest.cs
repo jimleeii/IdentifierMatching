@@ -9,13 +9,6 @@ namespace IdentifierMatching.DataContracts;
 public struct IdentifierMatchRequest
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="IdentifierMatchRequest"/> struct.
-    /// </summary>
-    public IdentifierMatchRequest()
-    {
-    }
-
-    /// <summary>
     /// Gets or sets the list of records in the base run.
     /// </summary>
     public required List<Dictionary<string, object>> BaseRun { get; set; }
